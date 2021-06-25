@@ -1,0 +1,405 @@
+---
+params: 
+  title: ""
+  publication_date: ""
+  doi: ""
+output: 
+  html_document:
+    anchor_sections: false
+    theme: null
+    highlight: null
+    mathjax: null
+    css: ["style.css", "https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap"]
+    self_contained: true
+title: "`r params$title`"
+---
+
+```{r general-setup, include=FALSE}
+## This file contains the ENGLISH version of the data story
+
+# Set general chunk options
+knitr::opts_chunk$set(echo = FALSE, fig.showtext = TRUE, fig.retina = 3, 
+                      fig.align = "center", warning = FALSE, message = FALSE)
+
+# Install pacman package if needed
+if (!require("pacman")) {
+  install.packages("pacman")
+  library(pacman)
+}
+
+# Install snf.datastory package if not available, otherwise load it
+if (!require("snf.datastory")) {
+  if (!require("devtools")) {
+    install.packages("devtools")
+    library(devtools)
+  }
+  install_github("snsf-data/snf.datastory")
+  library(snf.datastory)
+}
+
+# Load packages
+p_load(tidyverse,
+       lubridate,
+       scales, 
+       conflicted, 
+       jsonlite,
+       here)
+
+# Conflict preferences
+conflict_prefer("filter", "dplyr")
+conflict_prefer("get_datastory_theme", "snf.datastory")
+conflict_prefer("get_datastory_scheme", "snf.datastory")
+
+# Increase showtext package font resolution
+showtext_opts(dpi = 320)
+
+# Set the locale for date formatting (Windows)
+Sys.setlocale("LC_TIME", "English")
+
+# Create function to print number with local language-specific format 
+print_num <- function(x) snf.datastory::print_num(x, lang = "en")
+
+# Knitr hook for local formatting of printed numbers
+knitr::knit_hooks$set(
+  inline <- function(x) {
+    if (!is.numeric(x)) {
+      x
+    } else {
+      print_num(x)
+    }
+  }
+)
+```
+
+```{r print-header-infos, results='asis'}
+# Add publication date to header
+cat(format(as_datetime(params$publication_date), "%d.%m.%Y"))
+
+# Register the Google font (same as Data Portal, is not loaded twice)
+cat(paste0("<link href='https://fonts.googleapis.com/css?family=", 
+           "Source+Sans+Pro:400,700&display=swap' rel='stylesheet'>"))
+```
+
+```{r story-specific-setup, include=FALSE}
+# Set story-specific variables etc. here
+source("data_analysis.R")
+```
+
+
+<!-- Short lead (2-3 sentences) in bold -->
+
+__Using Emma\* as an example, we profile the career path of an early career researcher whose PhD was financed by an SNSF project. To this end, we combined and analysed data from the Federal Statistical Office (FSO) and the SNSF. \*Emma is a pseudonym.__
+
+On behalf of the federal government, the Swiss National Science Foundation (SNSF) promotes scientific research in a wide range of disciplines using a variety of funding schemes. One of the central goals of this support is to improve the career prospects of early career researchers. The SNSF invests fully a quarter of its budget in career support for talented early career researchers. Many early career researchers are also employed in other projects funded by the SNSF. In 2018, for example, 23% of assistants and research associates at Swiss universities (a total of 22,503 full-time equivalents) were financed by the SNSF.
+
+Using Emma as an example, we describe a typical career path from the start of the PhD journey to five years after graduation. Emma participated in the first graduate survey conducted by the FSO in 2013 as well as a second survey in 2017. We selected her because her career path is illustrative. To preserve her anonymity, we have modified several of the details pertaining to her case or deliberately kept them vague.
+
+
+### PhD study with a research stay abroad
+
+After completing her master’s degree in the area of mathematics, computer science, natural sciences and technology (STEM), Emma started her doctoral position in `r phd_start_emma`. Like  `r round(percentage_snsf_funded)`% of all PhD candidates in Switzerland, she was employed in an SNSF project for at least part of her doctorate. 
+
+<div class="plot-box">
+
+<div class="plot-title">What percentage of doctoral studies does the SNSF finance?</div>
+
+```{r finanzierung-plot, out.width="100%", fig.height=3}
+# Create the plot
+p_snf_finanzierung <- data_perc_financed %>% 
+  ggplot(aes(x = funded_study_percentage, 
+             tooltip = paste0(print_num(stat(count)), 
+                              " graduates"))) + 
+  geom_histogram_interactive(binwidth = 0.05, color = "white", 
+                 fill = get_datastory_scheme()[1]) + 
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  scale_y_continuous(limits = c(0, 125), breaks = seq(0, 125, 25)) +
+  labs(x = "Percentage of doctoral studies funded by the SNSF", 
+       y = "Number of graduates") + 
+  get_datastory_theme(title_axis = c("x", "y")) + 
+  theme(axis.ticks.x = element_line(color = "#d3d3d3", size = 0.3))
+
+# Create ggiraph object
+p_snf_finanzierung <- girafe(ggobj = p_snf_finanzierung, 
+       height_svg = 3, 
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill:#F75858;stroke:#F75858;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+p_snf_finanzierung
+```
+
+<div class="caption" style="width:100%">
+Only graduates with SNSF support. FSO Survey of higher education graduates: first survey 2013, 2015, 2017.
+</div>
+</div>
+
+The chart above shows that graduate students are financed by SNSF projects over different time spans in their PhD studies. For most PhD candidates, more than 50% of their doctorate is covered by SNSF projects.
+
+Emma invested a substantial amount of time in her PhD. She worked `r hours_phd_emma` hours per week on her project, which is about `r diff_hours_phd` hours more than the average PhD student.
+
+After a while, an opportunity arose to collaborate with another group. Emma took advantage of this opportunity for a research stay abroad, where she worked on part of her dissertation. Like Emma, `r percentage_stay_abroad`% of all PhD students undertake a research or study period abroad. Another `r percentage_stay_CH`% do a research stay at another institution in Switzerland, whereas `r percentage_stay_CHandabroad`% of PhD students spend part of their stay abroad and part of it in Switzerland.
+
+
+<div class="plot-box">
+
+<div class="plot-title">Research and study stays during the doctorate</div>
+
+```{r aufenthalte-plot, out.width="100%", fig.height=2.5}
+# Create the plot
+p_aufenthalte_2 <- data_stays %>%  
+  # Recoding
+  mutate(
+    stays = case_when(stays == "kein Aufenthalt" ~ "no research or study stay", 
+                      stays == "im Ausland" ~ "abroad", 
+                      stays == "in der Schweiz" ~ "in Switzerland", 
+                      stays == "im Ausland und in der Schweiz" ~ 
+                        "abroad and in Switzerland", 
+                      TRUE ~ "Unknown"), 
+    is_aufenthalt = ifelse(stays == "no research or study stay",
+                           "no research or study stay",
+                           "research or study stay")) %>%
+  ggplot(aes(x = reorder(stays, freq), y = freq, 
+             tooltip = paste0(round(freq * 100), "% ", 
+                              ifelse(is_aufenthalt == "research or study stay",
+                                     paste0("research or study stay ", stays), 
+                                     paste0(stays)), 
+                              "\n", print_num(n), 
+                              " answers from PhD students"))) + 
+  geom_col_interactive(color = "white", fill = get_datastory_scheme()[1]) +
+  coord_flip() +  
+  scale_y_continuous(labels = percent_format(accuracy = 1), 
+                     limits = c(0, 1)) +
+  get_datastory_theme(gridline_axis = "x") + 
+  labs(       x = NULL, y = NULL) 
+
+# Create ggiraph object
+p_aufenthalte_2 <- girafe(
+  ggobj = p_aufenthalte_2,
+  height_svg = 2.5,
+  options = list(
+    opts_toolbar(saveaspng = FALSE),
+    opts_hover(css = "fill:#F75858;stroke:#F75858;"),
+    opts_tooltip(
+      css = get_ggiraph_tooltip_css(),
+      opacity = 0.8,
+      delay_mouseover = 0,
+      delay_mouseout = 0
+    )
+  )
+)
+p_aufenthalte_2
+```
+
+<div class="caption" style="width:100%">
+Data for respondents who did not answer the question removed. FSO Survey of higher education graduates: first survey 2013, 2015, 2017.
+</div>
+</div>
+
+
+### PhD in record time
+
+Thanks to her perseverance, diligence and a bit of luck, Emma was able to complete her PhD without interruption and graduated in less than `r print_num(phd_duration_emma)` years. It took her `r phd_duration_diff` months less than is usual at Swiss universities.
+
+In contrast, `r percentage_snsf_funded_interrupt`% of PhD candidates funded by the SNSF and `r percentage_not_snsf_funded_interrupt`% of those not funded by the SNSF interrupt their studies. The reason most commonly cited is too heavy a workload due to family and activities apart from research.
+
+According to the findings from the FSO, 21% of PhD students drop out without a degree ten years after starting their PhD studies. Accordingly, these individuals were not included in the graduate surveys.
+
+
+<div class="plot-box">
+
+<div class="plot-title">Duration of doctorate</div>
+
+
+```{r phd-duration-plot, out.width="100%", fig.height=3.5}
+# Create the plot
+p_laenge_doktorat_2 <- 
+  data_length_points %>%
+  # Plot a random sample of 1000 to optimize tooltip speed
+  sample_n(1000) %>%  
+  mutate(data_id = row_number()) %>% 
+  ggplot(aes(x = 0, y = phd_years)) +
+  coord_flip() + 
+  geom_violin(color = get_datastory_scheme()[1], 
+              width = 0.5, alpha = 0.2, fill = NA 
+  ) +
+  geom_jitter_interactive(
+    aes(tooltip = paste0(print_num(round(phd_years, 1)), " years / ", 
+                         round(funded_study_percentage * 100), "%"), 
+        data_id = data_id),
+    alpha = 0.05,
+    shape = 21, width = 0.25, height = 0.3, 
+    colour = "white",
+    size = 2.5, fill = get_datastory_scheme()[1], stroke = 0) +
+  geom_point_interactive(
+    data = emma,
+    aes(tooltip = paste0("<b>Emma</b><br>", 
+                         print_num(round(phd_years, 1)), " years / ", 
+                         round(funded_study_percentage * 100), "%")),
+    shape = 21, alpha = 1, fill = "#F75858",
+    colour = "white", size = 5, 
+    stroke = 0.2) +
+  labs(title = NULL, x = NULL, y = "Time to PhD in years") +
+  get_datastory_theme(remove_plot_margin = TRUE, title_axis = "x") +
+  scale_x_continuous(limits = c(-0.25, 0.25)) +
+  scale_y_continuous(breaks = seq(0, 12, 2)) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+# Create ggiraph object
+p_laenge_doktorat_2 <- 
+  girafe(ggobj = p_laenge_doktorat_2, 
+       height_svg = 2.5, 
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill-opacity:1;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+
+p_laenge_doktorat_2
+```
+
+<div class="caption" style="width:100%">
+Case example: 3.4 years / 100% = Emma took 3.4 years to complete her PhD; 100% of the funding for her PhD came from the SNSF. Random sample of 1000 responses. Data for respondents who did not answer the question or who took longer than 12 years to complete their PhD were removed. FSO survey of higher education graduates: first survey 2013, 2015, 2017.
+</div>
+</div>
+
+Like `r percentage_future_acad_career`% of students who had completed their PhD the previous year, Emma aspired to an academic career. Individuals who benefited directly from SNSF career funding during their PhD were much more likely to express this desire (51%) than those who benefited through involvement in an SNSF project (26%) or had some other form of support (24%).
+
+
+### Majority abandon research after one year
+
+In the year following her graduation, Emma continued to be employed `r work_perc_1yr_emma`% of the time at a higher education institution and was engaged in research activity there. In general, this was the case for `r percentage_academia_1yr`% of the survey’s respondents. Another `r percentage_notacademia_1yr`% of graduates were no longer employed in academia, `r percentage_unemployed_1yr`% were unemployed and the status of `r percentage_acad_unknown_1yr`% could not be determined. Nearly half of graduates whose PhD was funded by the SNSF were still engaged in research the year following graduation (`r percentage_academia_1yr_SNSF_funded`%). For graduates whose PhD was funded by other means, `r percentage_academia_1yr_not_SNSF_funded`% were still engaged in research a year after graduation.
+
+Although the majority of graduates leave academia, one year after graduating `r percentage_public_sector`% are employed in the public sector. Another `r percentage_np_sector`% are working in the not-for-profit sector, and `r percentage_private_sector`% are employed in the private sector.
+
+In searching for their first job after obtaining their PhD, graduates submitted an average of `r n_applications_avg` applications. However, this number is strongly influenced by individuals who submitted many applications. In fact, half of all graduates sent fewer than `r n_applications_median` applications.
+
+
+### Five years on – an interim assessment
+
+Five years after graduation, Emma still has an academic job, as do `r percentage_academia_5yr`% of graduates who participated in the second survey. Like `r percentage_postdocs_5yr`% of graduates, Emma has a full-time position as a postdoctoral researcher. In this short time interval, `r percentage_prof_5yr`% of graduates have managed to secure a professorial position.
+
+<div class="plot-box">
+
+<div class="plot-title">Switches from academia to the non-academic sector (and vice versa)</div>
+
+```{r transitions-plot, out.width="100%", fig.height=5}
+# Recoding
+data_sankey <- data_cleaned %>% 
+  filter(eb == 2013) %>%  
+  mutate(eb_work_type = case_when(
+    eb_work_type == "Academic" ~ "Academia",
+    eb_work_type ==  "Non-Academic" ~ "Non-academic sector",
+    eb_work_type == "Ac./Non-Ac.: Unknown" ~ "Nicht eruierbar", 
+    eb_work_type == "Unemployed" ~ "Unemployed"),
+    zb_work_type = case_when(
+    zb_work_type == "Academic" ~ "Academia",
+    zb_work_type ==  "Non-Academic" ~ "Non-academic sector",
+    zb_work_type == "Ac./Non-Ac.: Unknown" ~ "Nicht eruierbar", 
+    zb_work_type == "Unemployed" ~ "Unemployed",
+    zb_work_type == "no reply" ~ "Keine Antwort")) %>% 
+  # Same ordering as the German version
+  mutate(
+    eb_work_type = fct_relevel(
+      eb_work_type,
+      c("Academia",
+        "Unemployed",
+        "Non-academic sector",
+        "Nicht eruierbar")
+    ),
+    zb_work_type = fct_relevel(
+      zb_work_type,
+      c("Academia",
+        "Unemployed",
+        "Non-academic sector",
+        "Nicht eruierbar",
+        "Keine Antwort")
+    )
+  ) %>% 
+  # Remove missing data
+  filter(zb_work_type != "Keine Antwort",
+         zb_work_type != "Nicht eruierbar",
+         eb_work_type != "Nicht eruierbar") %>% 
+  # Summarise
+  count(eb_work_type, zb_work_type) %>%
+  # Calculate frequencies 
+  mutate(freq = n / sum(n)) %>%  
+  # Fix order
+  mutate(zb_work_type = fct_relevel(
+    zb_work_type, c("Academia", "Unemployed", "Non-academic sector")))
+
+## Create the plot
+p_sankey <-
+  data_sankey %>%  
+  ggplot(aes(y = freq,
+             axis1 = eb_work_type,
+             axis2 = fct_rev(zb_work_type))) +
+  geom_alluvium(aes(fill = as_factor(eb_work_type)), width = 0/12) +
+  geom_stratum(width = 1/12, fill = "white", color = "grey") +
+  geom_text(stat = "stratum", size = 3.5, aes(label = eb_work_type), 
+            family = "Source Sans Pro") +
+  geom_text(stat = "stratum", size = 3.5, aes(label = zb_work_type), 
+            family = "Source Sans Pro") + theme(legend.position = "none")  + 
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) + 
+  scale_x_discrete(limits = c("One year after PhD",
+                              "Five years after PhD"), 
+                   expand = c(0.15, 0.15)) +
+  scale_fill_manual(values = get_datastory_scheme()) + 
+  get_datastory_theme(legend_position = "none", 
+                      title_axis = "y") + 
+  labs(title = NULL, x = NULL, y = "Share of respondents")
+
+p_sankey
+```
+<div class="caption" style="width:100%">
+FSO survey of higher education graduates. In the interest of readability, only the data of graduates who participated in the first survey in 2013 and the second survey in 2017 and whose employment sector could be determined are taken into account.
+</div>
+</div>
+
+This chart shows that at this point, there is still some mobility between academic and non-academic sectors. However, a large proportion of graduates have remained in the sector in which they were already working one year after completing their PhD. It is also evident that the proportion of individuals who are unemployed is much lower five years after graduation than in the year directly after graduation.
+
+Most graduates who are no longer working in academia are employed in jobs without leadership or managerial responsibility (`r percentage_1st_occupation_nacad_5yrs`%) or in lower management (`r percentage_2nd_occupation_nacad_5yrs`%).
+
+Emma feels that she has not yet achieved her professional goals. In this, she is not alone: five years after graduation, `r percentage_goals_5yr_nachieved`% of graduates share her sentiment; `r percentage_goals_5yr_fully_achieved`% feel they have fully achieved their professional goals.
+
+In terms of her personal life, a lot has changed for Emma in these five years after graduation. She has become a mother. That puts her in good company: whereas `r percentage_children_1yr`% of graduates have children shortly after receiving their PhD, at five years the figure rises to `r percentage_children_5yr`%.
+
+
+<div class='info-box'>
+
+### Data and methods
+
+<!-- Here you can add peculiarities and details of the chosen methodology or details of data selection. If there is no box, remove it.  -->
+
+To gain better insight into the situation of funded PhD students, the SNSF combined and analysed its own data and data from the FSO’s “Survey of higher education graduates”. This approach enables us to distinguish PhD students funded by the SNSF from those funded by other means. 
+
+The FSO graduate survey, which is conducted every two years, asks higher education graduates about their employment and education. Data from the first surveys in 2013, 2015 and 2017, and the second survey in 2017 were used in the analysis.
+
+
+### Mehr Information
+
+<!-- Here you can add further information like sources or links. If there is no box, remove it.   -->
+
+* <a href="https://www.bfs.admin.ch/bfs/en/home/statistics/education-science/surveys/ashs.html" target="_blank">Federal Statistical Office survey of higher education graduates</a>
+* <a href="http://www.snf.ch/en/funding/careers/Pages/default.aspx" target="_blank">SNSF career funding schemes</a>
+* <a href="https://careertrackercohorts.ch/" target="_blank">Ongoing SNSF study on the career development of young researchers</a>
+
+</div>
+
+Text and parts of the code of this data story are <a href="https://github.com/snsf-data/graduate_careers" target="_blank">available on Github</a> and <a href=https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archived on Zenodo</a>. Due to contractual terms, the underlying data and parts of the code cannot be published. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
+<br>
+<br>

@@ -1,0 +1,403 @@
+---
+params: 
+  title: ""
+  publication_date: ""
+  doi: ""
+output: 
+  html_document:
+    anchor_sections: false
+    theme: null
+    highlight: null
+    mathjax: null
+    css: ["style.css", "https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap"]
+    self_contained: true
+title: "`r params$title`"
+---
+
+```{r general-setup, include=FALSE}
+## This file contains the FRENCH version of the data story 
+
+# Set general chunk options
+knitr::opts_chunk$set(echo = FALSE, fig.showtext = TRUE, fig.retina = 3, 
+                      fig.align = "center", warning = FALSE, message = FALSE)
+
+# Install pacman package if needed
+if (!require("pacman")) {
+  install.packages("pacman")
+  library(pacman)
+}
+
+# Install snf.datastory package if not available, otherwise load it
+if (!require("snf.datastory")) {
+  if (!require("devtools")) {
+    install.packages("devtools")
+    library(devtools)
+  }
+  install_github("snsf-data/snf.datastory")
+  library(snf.datastory)
+}
+
+# Load packages
+p_load(tidyverse,
+       lubridate,
+       scales, 
+       conflicted, 
+       jsonlite,
+       here, 
+       ggiraph)
+
+# Conflict preferences
+conflict_prefer("filter", "dplyr")
+conflict_prefer("get_datastory_theme", "snf.datastory")
+conflict_prefer("get_datastory_scheme", "snf.datastory")
+
+# Increase showtext package font resolution
+showtext_opts(dpi = 320)
+
+# Set the locale for date formatting (Windows)
+Sys.setlocale("LC_TIME", "French")
+
+# Create function to print number with local language-specific format 
+print_num <- function(x) snf.datastory::print_num(x, lang = "fr")
+
+# Knitr hook for local formatting of printed numbers
+knitr::knit_hooks$set(
+  inline <- function(x) {
+    if (!is.numeric(x)) {
+      x
+    } else {
+      print_num(x)
+    }
+  }
+)
+```
+
+```{r print-header-infos, results='asis'}
+# Add publication date to header
+cat(format(as_datetime(params$publication_date), "%d.%m.%Y"))
+
+# Register the Google font (same as Data Portal, is not loaded twice)
+cat(paste0("<link href='https://fonts.googleapis.com/css?family=", 
+           "Source+Sans+Pro:400,700&display=swap' rel='stylesheet'>"))
+```
+
+```{r story-specific-setup, include=FALSE}
+# Set story-specific variables etc. here
+source("data_analysis.R")
+```
+
+
+<!-- Short lead (2-3 sentences) in bold -->
+
+__L’exemple d’Emma\* nous permet d’illustrer le parcours professionnel d’une jeune chercheuse dont le doctorat a été financé par l’intermédiaire d’un projet du FNS. À cette fin, nous avons rapproché et analysé des données de l’Office fédéral de la statistique (OFS) et du FNS. \*Emma est un pseudonyme.__
+
+
+Sur mandat de la Confédération, le FNS encourage la recherche scientifique dans toutes les disciplines à travers différentes mesures. L’un de ses principaux objectifs est d’améliorer les perspectives de carrière de la relève scientifique. Le FNS investit ainsi un peu plus du quart de ses ressources dans l’encouragement de carrières, instrument qui s’adresse aux jeunes chercheuses et chercheurs prometteurs. Nombre d’entre eux collaborent par ailleurs à d’autres projets financés par le FNS. En 2018, 23 % des assistant·es, collaboratrices et collaborateurs de recherche travaillant au sein des universités suisses (soit un total de 22’503 équivalents temps plein) étaient soutenus par le FNS.
+
+L’exemple d’Emma est l’illustration d’un parcours professionnel typique, du début du doctorat jusqu’à cinq ans après l’obtention de celui-ci. En 2013 et 2017, Emma a participé à deux enquêtes réalisées par l’OFS auprès des diplômé·es des hautes écoles. Nous l’avons sélectionnée car son parcours professionnel constitue un exemple très parlant. Afin de préserver son anonymat, des détails ont été légèrement modifiés ou délibérément omis.
+
+
+### Phase de doctorat avec séjour à l’étranger
+
+Après avoir passé son master dans une discipline MINT (mathématiques, informatique, sciences naturelles et technique), Emma a obtenu un poste de doctorante en `r phd_start_emma`. Comme `r round(percentage_snsf_funded)` % des doctorant·es en Suisse, elle a poursuivi au moins une partie de son doctorat dans le cadre d’un projet encouragé par le FNS.
+
+<div class="plot-box">
+
+<div class="plot-title">Encouragement par le FNS : quelle est la part financée sur la durée du doctorat ?</div>
+
+```{r finanzierung-plot, out.width="100%", fig.height=3}
+# Create the plot
+p_snf_finanzierung <- data_perc_financed %>% 
+  ggplot(aes(x = funded_study_percentage, 
+             tooltip = paste0(print_num(stat(count)), 
+                              " diplômé·es"))) + 
+  geom_histogram_interactive(binwidth = 0.05, color = "white", 
+                 fill = get_datastory_scheme()[1]) + 
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  scale_y_continuous(limits = c(0, 125), breaks = seq(0, 125, 25)) +
+  labs(x = "Part de l’encouragement du FNS sur la durée du doctorat", 
+       y = "Nombre de diplômé·es") + 
+  get_datastory_theme(title_axis = c("x", "y")) + 
+  theme(axis.ticks.x = element_line(color = "#d3d3d3", size = 0.3))
+
+# Create ggiraph object
+p_snf_finanzierung <- girafe(ggobj = p_snf_finanzierung, 
+       height_svg = 3, 
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill:#F75858;stroke:#F75858;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+p_snf_finanzierung
+```
+
+<div class="caption" style="width:100%">
+Diplômé·es avec encouragement du FNS uniquement. Données recueillies par l’OFS auprès des diplômé·es des « hautes écoles », enquêtes initiales de 2013, 2015 et 2017.
+</div>
+</div>
+
+Le graphique ci-dessus montre que les diplômé·es ont bénéficié durant différentes périodes de leur doctorat de l’encouragement du FNS. Dans la plupart des cas, cette durée représentait plus de 50 % de leur doctorat.
+
+Emma a investi beaucoup de temps dans son doctorat. Elle consacrait en effet près de `r hours_phd_emma` heures par semaine à son projet, soit environ `r diff_hours_phd` heures de plus que la moyenne des doctorant·es.
+
+Au bout d’un certain temps, une possibilité de collaboration avec un autre groupe de recherche est apparue. Emma a saisi cette opportunité et effectué un séjour de recherche à l’étranger, où elle a élaboré une partie de sa thèse. Comme Emma, `r percentage_stay_abroad` % des doctorant·es effectuent un séjour de recherche ou d’étude à l’étranger. `r percentage_stay_CH` % se rendent dans une autre institution en Suisse et `r percentage_stay_CHandabroad` % optent pour un séjour à l’étranger et un en Suisse.
+
+<div class="plot-box">
+
+<div class="plot-title">Séjours de recherche ou d’études durant le doctorat</div>
+
+```{r aufenthalte-plot, out.width="100%", fig.height=2.5}
+# Create the plot
+p_aufenthalte_2 <- data_stays %>%  
+  # Recoding
+  mutate(
+    stays = case_when(stays == "kein Aufenthalt" ~ "Pas de séjour", 
+                      stays == "im Ausland" ~ "À l’étranger", 
+                      stays == "in der Schweiz" ~ "En Suisse", 
+                      stays == "im Ausland und in der Schweiz" ~ 
+                        "À l’étranger et en Suisse", 
+                      TRUE ~ "Unknown"), 
+    is_aufenthalt = ifelse(stays == "Pas de séjour",
+                           "Pas de séjour",
+                           "Séjour")) %>%
+  ggplot(aes(x = reorder(stays, freq), y = freq, 
+             tooltip = paste0(round(freq * 100), "% ", 
+                              ifelse(is_aufenthalt == "Séjour",
+                                     paste0("Séjour : ", stays), 
+                                     paste0(stays)), 
+                              "\n", print_num(n), 
+                              " réponses de doctorant·es"))) + 
+  geom_col_interactive(color = "white", fill = get_datastory_scheme()[1]) +
+  coord_flip() +  
+  scale_y_continuous(labels = percent_format(accuracy = 1), 
+                     limits = c(0, 1)) +
+  get_datastory_theme(gridline_axis = "x") + 
+  labs(       x = NULL, y = NULL) 
+
+# Create ggiraph object
+p_aufenthalte_2 <- girafe(
+  ggobj = p_aufenthalte_2,
+  height_svg = 2.5,
+  options = list(
+    opts_toolbar(saveaspng = FALSE),
+    opts_hover(css = "fill:#F75858;stroke:#F75858;"),
+    opts_tooltip(
+      css = get_ggiraph_tooltip_css(),
+      opacity = 0.8,
+      delay_mouseover = 0,
+      delay_mouseout = 0
+    )
+  )
+)
+p_aufenthalte_2
+```
+
+<div class="caption" style="width:100%">
+Réponses vides supprimées. Données recueillies par l’OFS auprès de diplômé·es des « hautes écoles », enquêtes initiales de 2013, 2015 et 2017.
+</div>
+</div>
+
+
+### Doctorat obtenu en un temps record
+
+Grâce à sa persévérance, à son assiduité et à un brin de chance, Emma a pu mener à bien son doctorat sans interruption. Elle a obtenu son diplôme en à peine `r print_num(phd_duration_emma)` ans, soit `r phd_duration_diff` mois de moins que la durée usuelle dans les hautes écoles suisses. 
+
+À l’inverse, `r percentage_snsf_funded_interrupt` % des personnes soutenues par le FNS interrompent leurs études de doctorat (contre `r percentage_not_snsf_funded_interrupt` % de celles ne bénéficiant pas d’un financement du FNS). Raisons les plus fréquemment invoquées lors d’un arrêt en cours de parcours : la charge de travail trop importante induite par des activités extérieures à la recherche et les obligations familiales.
+
+Selon les [données recueillies par l'OFS](https://www.bfs.admin.ch/bfs/fr/home/statistiques/education-science/transitions-parcours-domaine-formation/degre-tertiaire.html), 21 % des doctorant·es abandonnent leurs études de doctorat sans obtenir de diplôme dix ans après les avoir débutées. Ces personnes n’ont par conséquent pas été interrogées dans le cadre des enquêtes réalisées.
+
+<div class="plot-box">
+
+<div class="plot-title">Durée du doctorat</div>
+
+
+```{r phd-duration-plot, out.width="100%", fig.height=3.5}
+# Create the plot
+p_laenge_doktorat_2 <- 
+  data_length_points %>%
+  # Plot a random sample of 1000 to optimize tooltip speed
+  sample_n(1000) %>%  
+  mutate(data_id = row_number()) %>% 
+  ggplot(aes(x = 0, y = phd_years)) +
+  coord_flip() + 
+  geom_violin(color = get_datastory_scheme()[1], 
+              width = 0.5, alpha = 0.2, fill = NA 
+  ) +
+  geom_jitter_interactive(
+    aes(tooltip = paste0(print_num(round(phd_years, 1)), " ans / ", 
+                         round(funded_study_percentage * 100), " %"), 
+        data_id = data_id),
+    alpha = 0.05,
+    shape = 21, width = 0.25, height = 0.3, 
+    colour = "white",
+    size = 2.5, fill = get_datastory_scheme()[1], stroke = 0) +
+  geom_point_interactive(
+    data = emma,
+    aes(tooltip = paste0("<b>Emma</b><br>", 
+                         print_num(round(phd_years, 1)), " ans / ", 
+                         round(funded_study_percentage * 100), " %")),
+    shape = 21, alpha = 1, fill = "#F75858",
+    colour = "white", size = 5, 
+    stroke = 0.2) +
+  labs(title = NULL, x = NULL, y = "Années de doctorat") +
+  get_datastory_theme(remove_plot_margin = TRUE, title_axis = "x") +
+  scale_x_continuous(limits = c(-0.25, 0.25)) +
+  scale_y_continuous(breaks = seq(0, 12, 2)) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+# Create ggiraph object
+p_laenge_doktorat_2 <- 
+  girafe(ggobj = p_laenge_doktorat_2, 
+       height_svg = 2.5, 
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill-opacity:1;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+
+p_laenge_doktorat_2
+```
+
+<div class="caption" style="width:100%">
+Emma 3,4 a. / 100 % = il a fallu à Emma 3,4 ans pour mener à bien son doctorat et elle était financée à 100 % par le FNS. Échantillon aléatoire de 1’000 réponses. Réponses vides et réponses avec une durée de doctorat supérieure à 12 ans supprimées. Données recueillies par l’OFS auprès des diplômé·es des « hautes écoles », enquêtes initiales de 2013, 2015 et 2017.
+</div>
+</div>
+
+Comme `r percentage_future_acad_career` % de celles et ceux qui ont obtenu leur doctorat l’an dernier, Emma aspire à une carrière académique. Les personnes ayant directement bénéficié d’une mesure d’encouragement de carrières du FNS durant leur doctorat expriment beaucoup plus souvent ce vœu professionnel (51 %) que celles qui ont obtenu un financement de par leur participation à un projet du FNS (26 %) ou via une autre source (24 %).
+
+
+### La plupart abandonnent la recherche au bout d’un an
+
+Un an après l’obtention de son doctorat, Emma est toujours engagée à `r work_perc_1yr_emma` % au sein d’une haute école où elle exerce une activité scientifique. Globalement, ceci vaut pour `r percentage_academia_1yr` % des personnes interrogées, sachant que `r percentage_notacademia_1yr` % ont quitté le milieu académique, que `r percentage_unemployed_1yr` % sont sans emploi et que des informations plus précises font défaut pour `r percentage_acad_unknown_1yr` % d’entre elles. Près de la moitié des personnes dont le doctorat a été soutenu par le FNS (`r percentage_academia_1yr_SNSF_funded` %) continuent de se consacrer à la science un an après la fin de leur doctorat contre seulement `r percentage_academia_1yr_not_SNSF_funded` % de celles dont les études ont été financées différemment.  
+
+Un an après avoir achevé leur doctorat, la plupart des diplômé·es ne travaillent déjà plus dans le domaine académique. Néanmoins, `r percentage_public_sector` % d’entre eux poursuivent une carrière dans le secteur public, `r percentage_np_sector` % exercent une activité dans une organisation à but non lucratif et `r percentage_private_sector` % ont rejoint le secteur privé.
+
+Avant de décrocher leur premier poste après le doctorat, les personnes interrogées ont en moyenne déposé `r n_applications_avg` candidatures. Ce chiffre est cependant fortement influencé par le grand nombre de démarches de candidature effectuées par certains. La moitié des diplômé·es ont toutefois envoyé moins de `r n_applications_median` postulations.
+
+
+### Cinq ans après – bilan intermédiaire
+
+Cinq ans après avoir présenté sa thèse, Emma travaille toujours dans le milieu académique comme `r percentage_academia_5yr` % des personnes ayant participé à l’enquête. Elle est engagée à  `r work_perc_5yr_emma` % comme postdoctorante. Cela vaut également pour `r percentage_postdocs_5yr` % des diplômé·es, dont `r percentage_prof_5yr` % sont même parvenus à obtenir une chaire professorale durant ce court laps de temps.
+
+
+<div class="plot-box">
+
+<div class="plot-title">Transitions entre le secteur académique et non académique</div>
+
+```{r transitions-plot, out.width="100%", fig.height=5}
+# Recoding
+data_sankey <- data_cleaned %>% 
+  filter(eb == 2013) %>%  
+  mutate(eb_work_type = case_when(
+    eb_work_type == "Academic" ~ "Secteur académique",
+    eb_work_type ==  "Non-Academic" ~ "Secteur non académique",
+    eb_work_type == "Ac./Non-Ac.: Unknown" ~ "Nicht eruierbar", 
+    eb_work_type == "Unemployed" ~ "Sans emploi"),
+    zb_work_type = case_when(
+    zb_work_type == "Academic" ~ "Secteur académique",
+    zb_work_type ==  "Non-Academic" ~ "Secteur non académique",
+    zb_work_type == "Ac./Non-Ac.: Unknown" ~ "Nicht eruierbar", 
+    zb_work_type == "Unemployed" ~ "Sans emploi",
+    zb_work_type == "no reply" ~ "Keine Antwort")) %>% 
+  # Same ordering as the German version
+  mutate(
+    eb_work_type = fct_relevel(
+      eb_work_type,
+      c("Secteur académique",
+        "Sans emploi",
+        "Secteur non académique",
+        "Nicht eruierbar")
+    ),
+    zb_work_type = fct_relevel(
+      zb_work_type,
+      c("Secteur académique",
+        "Sans emploi",
+        "Secteur non académique",
+        "Nicht eruierbar",
+        "Keine Antwort")
+    )
+  ) %>% 
+  # Remove missing data
+  filter(zb_work_type != "Keine Antwort",
+         zb_work_type != "Nicht eruierbar",
+         eb_work_type != "Nicht eruierbar") %>% 
+  # Summarise
+  count(eb_work_type, zb_work_type) %>%
+  # Calculate frequencies 
+  mutate(freq = n / sum(n)) %>%  
+  # Fix order
+  mutate(zb_work_type = fct_relevel(
+    zb_work_type, c("Secteur académique", "Sans emploi", 
+                    "Secteur non académique")))
+
+## Create the plot
+p_sankey <-
+  data_sankey %>%  
+  ggplot(aes(y = freq,
+             axis1 = eb_work_type,
+             axis2 = fct_rev(zb_work_type))) +
+  geom_alluvium(aes(fill = as_factor(eb_work_type)), width = 0/12) +
+  geom_stratum(width = 1/12, fill = "white", color = "grey") +
+  geom_text(stat = "stratum", size = 3.5, aes(label = eb_work_type), 
+            family = "Source Sans Pro") +
+  geom_text(stat = "stratum", size = 3.5, aes(label = zb_work_type), 
+            family = "Source Sans Pro") + theme(legend.position = "none")  + 
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) + 
+  scale_x_discrete(limits = c("One year after PhD",
+                              "Five years after PhD"), 
+                   expand = c(0.15, 0.15)) +
+  scale_fill_manual(values = get_datastory_scheme()) + 
+  get_datastory_theme(legend_position = "none", 
+                      title_axis = "y") + 
+  labs(title = NULL, x = NULL, y = "Share of respondents")
+
+p_sankey
+```
+<div class="caption" style="width:100%">
+Enquête « Hautes écoles » de l’OFS. Pour une meilleure lisibilité, seuls sont pris en compte les diplômé·es ayant participé à une enquête initiale en 2013 et à une seconde en 2017 et dont le secteur d’activité pouvait être déterminé.
+</div>
+</div>
+
+Ce graphique révèle qu’il existe à ce stade encore un certain degré de mobilité entre les secteurs académique et non académique. Cependant, un an après leur doctorat, une grande partie des diplômé·es continuent d’exercer dans le secteur dans lequel ils travaillaient déjà auparavant. Il peut aussi être observé que la proportion de personnes au chômage est beaucoup plus faible cinq ans après l’obtention du doctorat qu’elle ne l’était un an après.
+
+Parmi ceux ayant quitté le milieu universitaire, la plupart ne disposent pas du statut de cadre (`r percentage_1st_occupation_nacad_5yrs` %), ou occupent des positions de cadres inférieurs (`r percentage_2nd_occupation_nacad_5yrs` %).
+
+Cinq ans après l’obtention de son diplôme, Emma a le sentiment qu’elle n’a toujours pas atteint ses objectifs professionnels. Et elle n’est pas la seule : `r percentage_goals_5yr_nachieved` % de ses collègues sont du même avis, même si `r percentage_goals_5yr_fully_achieved` % d’entre eux estiment les avoir entièrement atteints.
+
+La situation d’Emma a également évolué dans le domaine privé au cours de ces cinq années : elle est entre-temps devenue mère. Elle se retrouve donc en bonne compagnie, car si `r percentage_children_1yr` % des diplômé·es ont des enfants peu après avoir passé leur doctorat, ils sont `r percentage_children_5yr` % à avoir fondé une famille cinq ans plus tard.
+
+<div class="info-box">
+
+### Données et méthodes
+
+Afin de mieux connaître la situation des doctorant·es soutenus, le FNS a regroupé et analysé les données de l’enquête réalisée auprès des diplômé·es des « hautes écoles » par l’Office fédéral de la statistique (OFS) avec les informations dont il disposait. Cela a permis d’établir une distinction entre les personnes qui avaient été encouragées par le FNS et celles qui avaient bénéficié d’un autre financement.
+
+Dans le cadre de l’enquête qu’il mène tous les deux ans, l’OFS interroge les diplômé·es des hautes écoles sur leur situation en matière d’emploi et de formation un an et cinq ans après l’obtention de leur doctorat. Les données des enquêtes initiales de 2013, 2015 et 2017 et de la deuxième enquête de 2017 ont été utilisées pour l’analyse.
+
+### Pour aller plus loin
+
+<!-- Here you can add further information like sources or links. If there is no box, remove it.   -->
+
+* <a href="https://www.bfs.admin.ch/bfs/fr/home/statistiques/education-science/enquetes/ashs.html" target="_blank">Enquête auprès des personnes diplômées des hautes écoles, Office fédéral de la statistique</a>
+* <a href="http://www.snf.ch/fr/encouragement/carrieres/Pages/default.aspx" target="_blank">Instruments d’encouragement de carrières du FNS</a>
+* <a href="https://careertrackercohorts.ch/" target="_blank">Étude en cours du FNS sur l’évolution de la carrière des jeunes chercheuses et chercheurs</a>
+
+</div>
+
+Le texte et des parties du code de ce récit de données sont <a href="https://github.com/snsf-data/graduate_careers" target="_blank">disponibles sur Github</a> et <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archivés sur Zenodo</a>. En raison de dispositions contractuelles, les données utilisées et certaines parties du code ne peuvent être publiées. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
+<br>
+<br>

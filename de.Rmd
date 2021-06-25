@@ -1,0 +1,376 @@
+---
+params: 
+  title: ""
+  publication_date: ""
+  doi: ""
+output: 
+  html_document:
+    anchor_sections: false
+    theme: null
+    highlight: null
+    mathjax: null
+    css: ["style.css", "https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700&display=swap"]
+    self_contained: true
+title: "`r params$title`"
+---
+
+```{r general-setup, include=FALSE}
+## This file contains the GERMAN version of the data story
+
+# Set general chunk options
+knitr::opts_chunk$set(echo = FALSE, fig.showtext = TRUE, fig.retina = 3, 
+                      fig.align = "center", warning = FALSE, message = FALSE)
+
+# Install pacman package if needed
+if (!require("pacman")) {
+  install.packages("pacman")
+  library(pacman)
+}
+
+# Install snf.datastory package if not available, otherwise load it
+if (!require("snf.datastory")) {
+  if (!require("devtools")) {
+    install.packages("devtools")
+    library(devtools)
+  }
+  install_github("snsf-data/snf.datastory")
+  library(snf.datastory)
+}
+
+# Load packages
+p_load(tidyverse,
+       lubridate,
+       scales, 
+       conflicted, 
+       jsonlite,
+       here, 
+       ggiraph)
+
+# Conflict preferences
+conflict_prefer("filter", "dplyr")
+conflict_prefer("get_datastory_theme", "snf.datastory")
+conflict_prefer("get_datastory_scheme", "snf.datastory")
+
+# Increase showtext package font resolution
+showtext_opts(dpi = 320)
+
+# Set the locale for date formatting (Windows)
+Sys.setlocale("LC_TIME", "German")
+
+# Create function to print number with local language-specific format 
+print_num <- function(x) snf.datastory::print_num(x, lang = "de")
+
+# Knitr hook for local formatting of printed numbers
+knitr::knit_hooks$set(
+  inline <- function(x) {
+    if (!is.numeric(x)) {
+      x
+    } else {
+      print_num(x)
+    }
+  }
+)
+```
+
+```{r print-header-infos, results='asis'}
+# Add publication date to header
+cat(format(as_datetime(params$publication_date), "%d.%m.%Y"))
+
+# Register the Google font (same as Data Portal, is not loaded twice)
+cat(paste0("<link href='https://fonts.googleapis.com/css?family=", 
+           "Source+Sans+Pro:400,700&display=swap' rel='stylesheet'>"))
+```
+
+```{r story-specific-setup, include=FALSE}
+# Set story-specific variables etc. here
+source("data_analysis.R")
+```
+
+
+<!-- Short lead (2-3 sentences) in bold -->
+
+__Anhand von Emma\* zeigen wir exemplarisch den Karriereweg einer jungen Forscherin, deren Doktorat über ein SNF-Projekt finanziert wurde. Dazu haben wir Daten des Bundesamtes für Statistik (BFS) und des SNF verknüpft und analysiert. \*Emma ist ein Pseudonym.__
+
+
+Im Auftrag des Bundes fördert der SNF die wissenschaftliche Forschung in allen  Disziplinen und mit verschiedenen Instrumenten. Eines der zentralen Ziele ist die Verbesserung der Karriereperspektiven von Nachwuchsforschenden. Der SNF investiert gut ein Viertel seiner Mittel in die Karriereförderung, die sich an vielversprechende junge Forschende richtet. Zudem sind viele Nachwuchsforschende in weiteren vom SNF geförderten Projekten angestellt. So waren 2018 23% der Assistierenden und wissenschaftlichen Mitarbeitenden an universitären Hochschulen in der Schweiz (insgesamt 22’503 Vollzeitäquivalente) durch SNF-Mittel finanziert.
+
+Wir zeigen am Beispiel von Emma einen typischen Karriereverlauf vom Beginn des Doktorats bis fünf Jahre nach Abschluss. Emma hatte 2013 an der Erstbefragung und 2017 an der Zweitbefragung der durch das BFS durchgeführten  Absolventenbefragung teilgenommen. Wir haben sie aufgrund ihres anschaulichen Werdegangs ausgewählt. Um die Anonymität zu wahren, haben wir an wenigen Stellen Details leicht abgeändert oder bewusst abstrakt gehalten. 
+
+### Doktoratsphase mit Auslandaufenthalt
+
+Nach ihrem Masterabschluss in einem Fach im Bereich Mathematik, Informatik, Naturwissenschaft und Technik (MINT) hatte Emma `r phd_start_emma` eine Doktorandenstelle angetreten. So wie `r round(percentage_snsf_funded)`% aller Doktorandinnen und Doktoranden in der Schweiz war sie zumindest während eines Teils ihres Doktorats in einem SNF-Projekt angestellt. 
+
+<div class="plot-box">
+
+<div class="plot-title">Finanzierung durch den SNF: Welcher Anteil der Doktoratsdauer wird finanziert?</div>
+
+```{r finanzierung-plot, out.width="100%", fig.height=3}
+# Create the plot
+p_snf_finanzierung <- data_perc_financed %>% 
+  ggplot(aes(x = funded_study_percentage, 
+             tooltip = paste0(print_num(stat(count)), " Absolventinnen und Absolventen"))) + 
+  geom_histogram_interactive(binwidth = 0.05, color = "white", 
+                 fill = get_datastory_scheme()[1]) + 
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  scale_y_continuous(limits = c(0, 125), breaks = seq(0, 125, 25)) +
+  labs(
+    # title = "Finanzierung durch den SNF", 
+       x = "Anteil der SNF-Finanzierung an Doktoratsdauer", 
+       y = "Anzahl Absolventinnen und Absolventen") + 
+  get_datastory_theme(title_axis = c("x", "y")) + 
+  theme(axis.ticks.x = element_line(color = "#d3d3d3", size = 0.3))
+
+# Create ggiraph object
+p_snf_finanzierung <- girafe(ggobj = p_snf_finanzierung, 
+       height_svg = 3, 
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill:#F75858;stroke:#F75858;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+p_snf_finanzierung
+```
+
+<div class="caption" style="width:100%">
+Nur Absolventinnen und Absolventen mit SNF-Förderung. BFS-Absolventenbefragung "Hochschulen", Erstbefragungen 2013, 2015, 2017.
+</div>
+</div>
+
+In der obigen Darstellung wird ersichtlich, dass Absolventinnen und Absolventen während unterschiedlichen Zeitspannen ihres Doktorats durch SNF-Projekte finanziert wurden. Bei der Mehrheit waren es mehr als 50% des Doktorats.
+
+Emma investierte viel Zeit in ihr Doktorat. Pro Woche arbeitete sie `r hours_phd_emma` Stunden an ihrem Projekt, rund `r diff_hours_phd` Stunden mehr als der Durchschnitt der Doktorierenden. 
+
+Nach einiger Zeit ergab sich die Möglichkeit für eine Zusammenarbeit mit einer anderen Forschungsgruppe. Emma nutzte diese Chance und absolvierte einen Forschungsaufenthalt im Ausland, wo sie einen Teil ihrer Dissertation erarbeitete. So wie Emma machen insgesamt `r percentage_stay_abroad`% aller Doktorierenden einen Forschungs- oder Studienaufenthalt im Ausland. Weitere `r percentage_stay_CH`% halten sich für diesen Zweck an einer anderen Institution in der Schweiz auf, und `r percentage_stay_CHandabroad`% der Doktorierenden verbringen ihren Aufenthalt sowohl im Ausland als auch in der Schweiz. 
+
+<div class="plot-box">
+
+<div class="plot-title">Forschungs- oder Studienaufenthalte während des Doktorats</div>
+
+```{r aufenthalte-plot, out.width="100%", fig.height=2.5}
+# Create the plot
+p_aufenthalte_2 <- data_stays %>%
+  mutate(is_aufenthalt = ifelse(stays == "kein Aufenthalt",
+                                "kein Aufenthalt",
+                                "Auslandaufenthalt")) %>%
+  ggplot(aes(x = reorder(stays, freq), y = freq,
+             tooltip = paste0(round(freq * 100), "% ",
+                           ifelse(is_aufenthalt == "Auslandaufenthalt",
+                                  paste0("Aufenthalt ", stays),
+                                  paste0(stays)),
+                           "\n", print_num(n),
+                           " Antworten von Doktorierenden"))) +
+  geom_col_interactive(color = "white", fill = get_datastory_scheme()[1]) +
+  coord_flip() +
+  scale_y_continuous(labels = percent_format(accuracy = 1),
+                     limits = c(0, 1)) +
+  get_datastory_theme(gridline_axis = "x") +
+  labs(x = NULL, y = NULL)
+
+# Create ggiraph object
+p_aufenthalte_2 <- girafe(ggobj = p_aufenthalte_2,
+       height_svg = 2.5,
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill:#F75858;stroke:#F75858;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+p_aufenthalte_2
+```
+
+<div class="caption" style="width:100%">
+Leere Antworten entfernt. BFS-Absolventenbefragung "Hochschulen", Erstbefragungen 2013, 2015, 2017.
+</div>
+</div>
+
+### In Rekordzeit zum Abschluss
+
+Dank ihrer Ausdauer, ihrem Fleiss und einem Quäntchen Glück konnte Emma ihr Doktorat ohne Unterbrechung abschliessen und promovierte nach weniger als `r print_num(phd_duration_emma)` Jahren. Damit hat sie `r phd_duration_diff` Monate weniger benötigt als sonst an Schweizer Hochschulen üblich. 
+
+Im Gegensatz dazu unterbrechen `r percentage_snsf_funded_interrupt`% der durch den SNF finanzierten Personen ihr Doktoratsstudium und `r percentage_not_snsf_funded_interrupt`% der nicht durch den SNF finanzierten Personen. Der häufigste Grund dafür ist zu hohe Arbeitsbelastung durch Tätigkeiten ausserhalb von Forschung und Familie.
+
+Gemäss [Zahlen des BFS](https://www.bfs.admin.ch/bfs/de/home/statistiken/bildung-wissenschaft/uebertritte-verlaeufe-bildungsbereich/tertiaerstufe.html) brechen insgesamt  21% der Doktorandinnen und Doktoranden 10 Jahre nach Beginn des Doktoratsstudiums ohne Abschluss ab. Diese Personen waren dementsprechend auch nicht Teil der Absolventenbefragungen. 
+
+<div class="plot-box">
+
+<div class="plot-title">Länge des Doktorats</div>
+
+
+```{r phd-duration-plot, out.width="100%", fig.height=3.5}
+# Create the plot
+p_laenge_doktorat_2 <- 
+  data_length_points %>%
+  # Plot a random sample of 1000 to optimize tooltip speed
+  sample_n(1000) %>%  
+  mutate(data_id = row_number()) %>% 
+  ggplot(aes(x = 0, y = phd_years)) +
+  coord_flip() + 
+  geom_violin(color = get_datastory_scheme()[1], 
+              width = 0.5, alpha = 0.2, fill = NA 
+  ) +
+  geom_jitter_interactive(
+    aes(tooltip = paste0(print_num(round(phd_years, 1)), " J. / ", 
+                         round(funded_study_percentage * 100), "%"), 
+        data_id = data_id),
+    alpha = 0.05,
+    shape = 21, width = 0.25, height = 0.3, 
+    colour = "white",
+    size = 2.5, fill = get_datastory_scheme()[1], stroke = 0) +
+  geom_point_interactive(
+    data = emma,
+    aes(tooltip = paste0("<b>Emma</b><br>", 
+                         print_num(round(phd_years, 1)), " J. / ", 
+                         round(funded_study_percentage * 100), "%")),
+    shape = 21, alpha = 1, fill = "#F75858",
+    colour = "white", size = 5, 
+    stroke = 0.2) +
+  labs(title = NULL, x = NULL, y = "Jahre für Doktorat") +
+  get_datastory_theme(remove_plot_margin = TRUE, title_axis = "x") +
+  scale_x_continuous(limits = c(-0.25, 0.25)) +
+  scale_y_continuous(breaks = seq(0, 12, 2)) +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+
+# Create ggiraph object
+p_laenge_doktorat_2 <- 
+  girafe(ggobj = p_laenge_doktorat_2, 
+       height_svg = 2.5, 
+       options = list(
+         opts_toolbar(saveaspng = FALSE),
+         opts_hover(css = "fill-opacity:1;"),
+         opts_tooltip(
+           css = get_ggiraph_tooltip_css(),
+           opacity = 0.8,
+           delay_mouseover = 0,
+           delay_mouseout = 0
+         )
+       ))
+
+p_laenge_doktorat_2
+```
+
+<div class="caption" style="width:100%">
+Lesebeispiel: 3,4 J. / 100% = Emma benötigte für ihr Doktorat 3,4 Jahre; sie wurde zu 100% vom SNF unterstützt. Zufällige Stichprobe von 1'000 Antworten. Leere Antworten und Antworten mit Doktoratsdauer über 12 Jahren entfernt. BFS-Absolventenbefragung "Hochschulen", Erstbefragungen 2013, 2015, 2017.
+</div>
+</div>
+
+Wie `r percentage_future_acad_career`% derjenigen, die ihr Doktorat im vorhergehenden Jahr abgeschlossen haben, strebt Emma für ihre Zukunft eine akademische Karriere an. Personen, die während des Doktorats direkt von einer SNF-Karriereförderung profitiert haben, geben sehr viel häufiger diesen Karrierewunsch an (51%) als Personen, die über die Mitarbeit in einem SNF-Projekt (26%) oder anderweitig finanziert wurden (24%).
+
+
+### Mehrheit nach einem Jahr nicht mehr in der Forschung
+
+Im Jahr nach ihrem Abschluss ist Emma weiterhin zu `r work_perc_1yr_emma`% an einer Hochschule beschäftigt und übt dort eine wissenschaftliche Tätigkeit aus. Insgesamt trifft dies auf `r percentage_academia_1yr`% der befragten Personen zu. Weitere `r percentage_notacademia_1yr`% sind nicht mehr im akademischen Umfeld tätig, `r percentage_unemployed_1yr`% sind arbeitslos und für `r percentage_acad_unknown_1yr`% kann dies nicht genauer eruiert werden. Fast die Hälfte der Personen, deren Doktorat durch den SNF finanziert wurde, verbleibt im Jahr nach dem Abschluss in der Wissenschaft (`r percentage_academia_1yr_SNSF_funded`%). Bei denjenigen, deren Doktorat anders finanziert wurde, sind es `r percentage_academia_1yr_not_SNSF_funded`%. 
+
+Auch wenn die Mehrheit der Absolventinnen und Absolventen bereits nicht mehr in der Akademie tätig sind, so arbeiten doch `r percentage_public_sector`% ein Jahr nach dem Abschluss im öffentlichen Sektor. Weitere `r percentage_np_sector`% sind im Non-Profit-Sektor tätig und insgesamt `r percentage_private_sector`% im Privatsektor. 
+
+Für ihre erste Stelle nach dem Doktoratsabschluss haben die Absolventinnen und Absolventen durchschnittlich `r n_applications_avg` Bewerbungen geschrieben. Dieser Wert ist jedoch stark durch einzelne Personen beeinflusst, die sich sehr oft beworben haben. So hat nämlich die Hälfte aller Absolventinnen und Absolventen weniger als `r n_applications_median` Bewerbungen verschickt.
+
+### Fünf Jahre danach – eine Zwischenbilanz
+
+Auch fünf Jahre nach ihrem Abschluss ist Emma, so wie `r percentage_academia_5yr`% der Personen, die an der Zweitbefragung teilgenommen haben, weiterhin im akademischen Umfeld tätig. Sie ist zu `r work_perc_5yr_emma`% als Postdoktorandin angestellt. Das Gleiche trifft auf `r percentage_postdocs_5yr`% der Absolventinnen und Absolventen zu. `r percentage_prof_5yr`% können sich in dieser kurzen Zeit bereits eine Stelle als Professor oder Professorin sichern. 
+
+<div class="plot-box">
+
+<div class="plot-title">Transitionen zwischen dem akademischen und dem nicht-akademischen Sektor</div>
+
+```{r transitions-plot, out.width="100%", fig.height=5}
+# Recoding
+data_sankey <- data_cleaned %>% 
+  filter(eb == 2013) %>%  
+  mutate(eb_work_type = case_when(
+    eb_work_type == "Academic" ~ "Akademie",
+    eb_work_type ==  "Non-Academic" ~ "Nicht-akademischer Sektor",
+    eb_work_type == "Ac./Non-Ac.: Unknown" ~ "Nicht eruierbar", 
+    eb_work_type == "Unemployed" ~ "Arbeitslos"),
+    zb_work_type = case_when(
+    zb_work_type == "Academic" ~ "Akademie",
+    zb_work_type ==  "Non-Academic" ~ "Nicht-akademischer Sektor",
+    zb_work_type == "Ac./Non-Ac.: Unknown" ~ "Nicht eruierbar", 
+    zb_work_type == "Unemployed" ~ "Arbeitslos",
+    zb_work_type == "no reply" ~ "Keine Antwort")) %>% 
+  # Remove missing data
+  filter(zb_work_type != "Keine Antwort",
+         zb_work_type != "Nicht eruierbar",
+         eb_work_type != "Nicht eruierbar") %>% 
+  # Summarise
+  count(eb_work_type, zb_work_type) %>%
+  # Calculate frequencies 
+  mutate(freq = n / sum(n)) %>%  
+  # Fix order
+  mutate(zb_work_type = fct_relevel(
+    zb_work_type, c("Akademie", "Arbeitslos", "Nicht-akademischer Sektor")))
+
+## Create the plot
+p_sankey <-
+  data_sankey %>%  
+  ggplot(aes(y = freq,
+             axis1 = eb_work_type,
+             axis2 = fct_rev(zb_work_type))) +
+  geom_alluvium(aes(fill = as_factor(eb_work_type)), width = 0/12) +
+  geom_stratum(width = 1/12, fill = "white", color = "grey") +
+  geom_text(stat = "stratum", size = 3.5, aes(label = eb_work_type), 
+            family = "Source Sans Pro") +
+  geom_text(stat = "stratum", size = 3.5, aes(label = zb_work_type), 
+            family = "Source Sans Pro") + theme(legend.position = "none")  + 
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 1)) + 
+  scale_x_discrete(limits = c("Ein Jahr nach Doktorat",
+                              "Fünf Jahre nach Doktorat"), 
+                   expand = c(0.15, 0.15)) +
+  scale_fill_manual(values = get_datastory_scheme()) + 
+  get_datastory_theme(legend_position = "none", 
+                      title_axis = "y") + 
+  labs(title = NULL, x = NULL, y = "Anteil der Befragten")
+
+p_sankey
+```
+<div class="caption" style="width:100%">
+BFS-Absolventenbefragung “Hochschulen”. Für eine bessere Lesbarkeit werden nur Absolventinnen und Absolventen berücksichtigt, die an der Erstbefragung 2013 und der Zweitbefragung 2017 teilgenommen haben und deren Beschätigungssektor eruierbar war.
+</div>
+</div>
+
+
+Aus dieser Darstellung wird ersichtlich, dass es auch zu diesem Zeitpunkt noch eine gewisse Mobilität zwischen dem akademischen und dem nicht-akademischen Sektor gibt. Ein Grossteil verbleibt jedoch im Sektor, in dem er bereits ein Jahr nach dem Abschluss des Doktorats tätig war. Es zeigt sich auch, dass der Anteil der Personen, die arbeitslos sind, fünf Jahre nach dem Abschluss weitaus geringer ist als noch im Jahr nach dem Abschluss. 
+
+Von den Personen, die nicht mehr im akademischen Sektor tätig sind, sind die meisten Arbeitnehmende ohne Führungsfunktion (`r percentage_1st_occupation_nacad_5yrs`%) oder Arbeitnehmende im unteren Kader (`r percentage_2nd_occupation_nacad_5yrs`%).
+
+Emma hat das Gefühl, dass sie ihre beruflichen Ziele bisher noch nicht erreicht hat. Damit steht sie nicht alleine da: `r percentage_goals_5yr_nachieved`% denken nach 5 Jahren so wie sie.  `r percentage_goals_5yr_fully_achieved`% geben fünf Jahre nach dem Abschluss an, ihre beruflichen Ziele bisher voll und ganz erreicht zu haben. 
+
+
+Im privaten Bereich hatte sich für Emma in diesen fünf Jahren einiges verändert, sie wurde in der Zwischenzeit Mutter eines Kindes. Damit ist sie in guter Gesellschaft: Während kurz nach dem Doktorat `r percentage_children_1yr`% der Absolventinnen und Absolventen Kinder haben, sind es 5 Jahre nach dem Doktorat `r percentage_children_5yr`%. 
+
+
+<div class='info-box'>
+
+### Daten und Methoden
+
+<!-- Here you can add peculiarities and details of the chosen methodology or details of data selection. If there is no box, remove it.  -->
+
+Um einen besseren Einblick in die Situation der finanzierten Doktorandinnen und Doktoranden zu gewinnen, hat der SNF die Daten der Absolventenstudie «Hochschulen» des Bundesamts für Statistik (BFS) mit den eigenen Daten verknüpft und analysiert. Dadurch können wir Doktorandinnen und Doktoranden, die durch den SNF finanziert wurden, von anderweitig finanzierten unterscheiden.
+
+Mit der Absolventenstudie, die alle zwei Jahre durchgeführt wird, befragt das BFS Hochschulabsolventinnen und Hochschulabsolventen 1 und 5 Jahre nach ihrem Abschluss zu ihrer Erwerbs- und Ausbildungssituation. Für die Analyse wurden die Daten der Erstbefragungen 2013, 2015 und 2017 sowie der Zweitbefragung 2017 verwendet. 
+
+### Mehr Information
+
+<!-- Here you can add further information like sources or links. If there is no box, remove it.   -->
+
+* <a href="https://www.bfs.admin.ch/bfs/de/home/statistiken/bildung-wissenschaft/erhebungen/ashs.html" target="_blank">Absolventenstudien Hochschulen des Bundesamts für Statistik</a>
+* <a href="http://www.snf.ch/de/foerderung/karrieren/Seiten/default.aspx" target="_blank">Karriereförderung des SNF</a>
+* <a href="https://careertrackercohorts.ch/" target="_blank">Laufende Studie des SNF zur Karriereentwicklung von Nachwuchsforschenden</a>
+
+</div>
+
+Text und Teile des Codes dieser Datengeschichte sind <a href="https://github.com/snsf-data/graduate_careers" target="_blank">auf Github verfügbar</a> und <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">auf Zenodo archiviert</a>. Aufgrund von vertraglichen Bestimmungen können die zugrundeliegenden Daten und Teile des Codes nicht veröffentlicht werden. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
+<br>
+<br>
