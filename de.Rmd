@@ -371,6 +371,6 @@ Mit der Absolventenstudie, die alle zwei Jahre durchgeführt wird, befragt das B
 
 </div>
 
-Text und Teile des Codes dieser Datengeschichte sind <a href="https://github.com/snsf-data/graduate_careers" target="_blank">auf Github verfügbar</a> und <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">auf Zenodo archiviert</a>. Aufgrund von vertraglichen Bestimmungen können die zugrundeliegenden Daten und Teile des Codes nicht veröffentlicht werden. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
+Text und Teile des Codes dieser Datengeschichte sind <a href="https://github.com/snsf-data/datastory_graduate_careers" target="_blank">auf Github verfügbar</a> und <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">auf Zenodo archiviert</a>. Aufgrund von vertraglichen Bestimmungen können die zugrundeliegenden Daten und Teile des Codes nicht veröffentlicht werden. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
 <br>
 <br>

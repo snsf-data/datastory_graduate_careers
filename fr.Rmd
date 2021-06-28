@@ -398,6 +398,6 @@ Dans le cadre de l’enquête qu’il mène tous les deux ans, l’OFS interroge
 
 </div>
 
-Le texte et des parties du code de ce récit de données sont <a href="https://github.com/snsf-data/graduate_careers" target="_blank">disponibles sur Github</a> et <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archivés sur Zenodo</a>. En raison de dispositions contractuelles, les données utilisées et certaines parties du code ne peuvent être publiées. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
+Le texte et des parties du code de ce récit de données sont <a href="https://github.com/snsf-data/datastory_graduate_careers" target="_blank">disponibles sur Github</a> et <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archivés sur Zenodo</a>. En raison de dispositions contractuelles, les données utilisées et certaines parties du code ne peuvent être publiées. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
 <br>
 <br>

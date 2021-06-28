@@ -97,7 +97,7 @@ Using Emma as an example, we describe a typical career path from the start of th
 
 ### PhD study with a research stay abroad
 
-After completing her master’s degree in the area of mathematics, computer science, natural sciences and technology (STEM), Emma started her doctoral position in `r phd_start_emma`. Like  `r round(percentage_snsf_funded)`% of all PhD candidates in Switzerland, she was employed in an SNSF project for at least part of her doctorate. 
+After completing her master’s degree in the area of mathematics, computer science, natural sciences and technology (MINT), Emma started her doctoral position in `r phd_start_emma`. Like  `r round(percentage_snsf_funded)`% of all PhD candidates in Switzerland, she was employed in an SNSF project for at least part of her doctorate. 
 
 <div class="plot-box">
 
@@ -400,6 +400,6 @@ The FSO graduate survey, which is conducted every two years, asks higher educati
 
 </div>
 
-Text and parts of the code of this data story are <a href="https://github.com/snsf-data/graduate_careers" target="_blank">available on Github</a> and <a href=https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archived on Zenodo</a>. Due to contractual terms, the underlying data and parts of the code cannot be published. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
+Text and parts of the code of this data story are <a href="https://github.com/snsf-data/datastory_graduate_careers" target="_blank">available on Github</a> and <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archived on Zenodo</a>. Due to contractual terms, the underlying data and parts of the code cannot be published. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
 <br>
 <br>
