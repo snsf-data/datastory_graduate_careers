@@ -53,7 +53,7 @@ feature_story <- FALSE
 # DOI of the story (optional)
 doi <- "https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" 
 # URL to Github page (optional)
-github_url <- "https://github.com/snsf-data/graduate_careers"
+github_url <- "https://github.com/snsf-data/datastory_graduate_careers"
 
 # IMPORTANT: Put a title image (as .jpg) into the output directory. 
 # example: "output/datastory-template.jpg"
