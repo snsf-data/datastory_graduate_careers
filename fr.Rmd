@@ -94,7 +94,7 @@ __L’exemple d’Emma\* nous permet d’illustrer le parcours professionnel d�
 
 Sur mandat de la Confédération, le FNS encourage la recherche scientifique dans toutes les disciplines à travers différentes mesures. L’un de ses principaux objectifs est d’améliorer les perspectives de carrière de la relève scientifique. Le FNS investit ainsi un peu plus du quart de ses ressources dans l’encouragement de carrières, instrument qui s’adresse aux jeunes chercheuses et chercheurs prometteurs. Nombre d’entre eux collaborent par ailleurs à d’autres projets financés par le FNS. En 2018, 23 % des assistant·es, collaboratrices et collaborateurs de recherche travaillant au sein des universités suisses (soit un total de 22’503 équivalents temps plein) étaient soutenus par le FNS.
 
-L’exemple d’Emma est l’illustration d’un parcours professionnel typique, du début du doctorat jusqu’à cinq ans après l’obtention de celui-ci. En 2013 et 2017, Emma a participé à deux enquêtes réalisées par l’OFS auprès des diplômé·es des hautes écoles. Nous l’avons sélectionnée car son parcours professionnel constitue un exemple très parlant. Afin de préserver son anonymat, des détails ont été légèrement modifiés ou délibérément omis.
+L’exemple d’Emma est l’illustration d’un parcours professionnel possible^[Dans une version précédente de ce récit de données, le parcours professionnel d’Emma était qualifié de <em>typique</em>. Suite à plusieurs réactions, nous avons procédé à une adaptation, car l’exemple d’Emma n’est pas représentatif de la majorité des doctorant·es en Suisse.<br><br>], du début du doctorat jusqu’à cinq ans après l’obtention de celui-ci. En 2013 et 2017, Emma a participé à deux enquêtes réalisées par l’OFS auprès des diplômé·es des hautes écoles. Nous l’avons sélectionnée car son parcours professionnel constitue un exemple très parlant. Afin de préserver son anonymat, des détails ont été légèrement modifiés ou délibérément omis.
 
 
 ### Phase de doctorat avec séjour à l’étranger
@@ -399,5 +399,3 @@ Dans le cadre de l’enquête qu’il mène tous les deux ans, l’OFS interroge
 </div>
 
 Le texte et des parties du code de ce récit de données sont <a href="https://github.com/snsf-data/datastory_graduate_careers" target="_blank">disponibles sur Github</a> et <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archivés sur Zenodo</a>. En raison de dispositions contractuelles, les données utilisées et certaines parties du code ne peuvent être publiées. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
-<br>
-<br>

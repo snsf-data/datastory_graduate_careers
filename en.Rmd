@@ -92,7 +92,7 @@ __Using Emma\* as an example, we profile the career path of an early career rese
 
 On behalf of the federal government, the Swiss National Science Foundation (SNSF) promotes scientific research in a wide range of disciplines using a variety of funding schemes. One of the central goals of this support is to improve the career prospects of early career researchers. The SNSF invests fully a quarter of its budget in career support for talented early career researchers. Many early career researchers are also employed in other projects funded by the SNSF. In 2018, for example, 23% of assistants and research associates at Swiss universities (a total of 22,503 full-time equivalents) were financed by the SNSF.
 
-Using Emma as an example, we describe a typical career path from the start of the PhD journey to five years after graduation. Emma participated in the first graduate survey conducted by the FSO in 2013 as well as a second survey in 2017. We selected her because her career path is illustrative. To preserve her anonymity, we have modified several of the details pertaining to her case or deliberately kept them vague.
+Using Emma as an example, we describe a possible^[In an earlier version of this data story, we had written that Emma's had been a <em>typical</em> career path. But we later changed this based on feedback from readers, as Emma's career path as a whole is not representative of all doctoral students in Switzerland.<br><br>] career path from the start of the PhD journey to five years after graduation. Emma participated in the first graduate survey conducted by the FSO in 2013 as well as a second survey in 2017. We selected her because her career path is illustrative. To preserve her anonymity, we have modified several of the details pertaining to her case or deliberately kept them vague.
 
 
 ### PhD study with a research stay abroad
@@ -390,7 +390,7 @@ To gain better insight into the situation of funded PhD students, the SNSF combi
 The FSO graduate survey, which is conducted every two years, asks higher education graduates about their employment and education. Data from the first surveys in 2013, 2015 and 2017, and the second survey in 2017 were used in the analysis.
 
 
-### Mehr Information
+### More information
 
 <!-- Here you can add further information like sources or links. If there is no box, remove it.   -->
 
@@ -401,5 +401,4 @@ The FSO graduate survey, which is conducted every two years, asks higher educati
 </div>
 
 Text and parts of the code of this data story are <a href="https://github.com/snsf-data/datastory_graduate_careers" target="_blank">available on Github</a> and <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">archived on Zenodo</a>. Due to contractual terms, the underlying data and parts of the code cannot be published. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
-<br>
-<br>
+

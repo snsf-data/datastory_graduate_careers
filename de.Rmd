@@ -94,7 +94,7 @@ __Anhand von Emma\* zeigen wir exemplarisch den Karriereweg einer jungen Forsche
 
 Im Auftrag des Bundes fördert der SNF die wissenschaftliche Forschung in allen  Disziplinen und mit verschiedenen Instrumenten. Eines der zentralen Ziele ist die Verbesserung der Karriereperspektiven von Nachwuchsforschenden. Der SNF investiert gut ein Viertel seiner Mittel in die Karriereförderung, die sich an vielversprechende junge Forschende richtet. Zudem sind viele Nachwuchsforschende in weiteren vom SNF geförderten Projekten angestellt. So waren 2018 23% der Assistierenden und wissenschaftlichen Mitarbeitenden an universitären Hochschulen in der Schweiz (insgesamt 22’503 Vollzeitäquivalente) durch SNF-Mittel finanziert.
 
-Wir zeigen am Beispiel von Emma einen typischen Karriereverlauf vom Beginn des Doktorats bis fünf Jahre nach Abschluss. Emma hatte 2013 an der Erstbefragung und 2017 an der Zweitbefragung der durch das BFS durchgeführten  Absolventenbefragung teilgenommen. Wir haben sie aufgrund ihres anschaulichen Werdegangs ausgewählt. Um die Anonymität zu wahren, haben wir an wenigen Stellen Details leicht abgeändert oder bewusst abstrakt gehalten. 
+Wir zeigen am Beispiel von Emma einen möglichen Karriereverlauf^[In einer früheren Version dieser Datengeschichte hiess es, dass Emma einen <em>typischen</em> Karriereverlauf zeigt. Aufgrund von Rückmeldungen haben wir dies angepasst, weil das Beispiel von Emma insgesamt nicht für die Mehrheit der Doktorandinnen und Doktoranden in der Schweiz repräsentativ ist.<br><br>] vom Beginn des Doktorats bis fünf Jahre nach Abschluss. Emma hatte 2013 an der Erstbefragung und 2017 an der Zweitbefragung der durch das BFS durchgeführten  Absolventenbefragung teilgenommen. Wir haben sie aufgrund ihres anschaulichen Werdegangs ausgewählt. Um die Anonymität zu wahren, haben wir an wenigen Stellen Details leicht abgeändert oder bewusst abstrakt gehalten. 
 
 ### Doktoratsphase mit Auslandaufenthalt
 
@@ -372,5 +372,3 @@ Mit der Absolventenstudie, die alle zwei Jahre durchgeführt wird, befragt das B
 </div>
 
 Text und Teile des Codes dieser Datengeschichte sind <a href="https://github.com/snsf-data/datastory_graduate_careers" target="_blank">auf Github verfügbar</a> und <a href="https://doi.org/10.46446/datastory.emma-on-her-way-to-a-professorship" target="_blank">auf Zenodo archiviert</a>. Aufgrund von vertraglichen Bestimmungen können die zugrundeliegenden Daten und Teile des Codes nicht veröffentlicht werden. DOI: 10.46446/datastory.emma-on-her-way-to-a-professorship
-<br>
-<br>
